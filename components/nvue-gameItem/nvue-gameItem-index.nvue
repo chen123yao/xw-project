@@ -1,0 +1,278 @@
+<template>
+	<view class="nvue-gameItem">
+		<view class="item" v-if="item">
+			<view class="icon">
+				<image :src="item.new_icon||item.icon" mode="widthFix" style="width: 60px;height: 60px;"
+					@click="handleRouter(item.game_id)"></image>
+				<view class="numbers" v-if="type==1&&itemIndex<100">
+					<image src="@/static/images/icon-rate.png" mode="widthFix" style="width: 60px;height: 60px;">
+					</image>
+					<text
+						style="font-size: 20rpx;position: absolute;color: #fff; width: 80rpx; text-align: center;top: 0rpx;left: 0rpx;font-weight:700;">NO:{{itemIndex}}</text>
+				</view>
+				<view class="numbers" v-if="type==4||type==7">
+					<image src="@/static/images/icon-rate.png" mode="widthFix" style="width: 60px;height: 60px;">
+					</image>
+					<text
+						style="font-size: 20rpx;position: absolute;color: #fff; width: 80rpx; text-align: center; top: 0rpx;left: 0rpx;font-weight:700;">{{item.star_cnt}}分</text>
+				</view>
+
+				<view class="numbers" v-if="type==2">
+					<image src="@/static/images/icon-rate.png" mode="widthFix" style="width: 60px;height: 60px;"
+						v-if="item.rate<1"></image>
+					<image v-else-if="item.has_coupons || item.has_rebate" src="@/static/images/yhq-rate1.png"
+						mode="widthFix" style="width: 60px;height: 60px;"></image>
+					<text v-if="item.rate<1"
+						style="font-size: 18rpx;position: absolute;color: #fff;width: 80rpx; text-align: center;top: 0rpx;left: 0rpx;">{{(item.rate*10).toFixed(1)}}
+						折</text>
+					<text v-else-if="item.has_coupons"
+						style="font-size: 18rpx;position: absolute;width: 80rpx; text-align: center;color: #fff;top: 0rpx;left: 0rpx;">优惠券</text>
+					<text v-else-if="item.has_rebate"
+						style="font-size: 18rpx;position: absolute;width: 80rpx; text-align: center;color: #fff;top: 0rpx;left: 0rpx;">返
+						利</text>
+				</view>
+			</view>
+			<view class="gameDetail" :style="{borderBottom:type && type!=5 ?'1rpx solid ':'', width: myWidth - 64 - 60 + 'px'}"
+				@click="handleRouter(item.game_id)">
+				<view v-if="type==5&&itemIndex<3" style="margin-right: 10px;align-self: flex-start;">
+					<image :src="require('@/static/images/index/remen'+(itemIndex+1)+'.png')" mode="scaleToFill"
+						style="width: 18px;height: 22px;"></image>
+				</view>
+				<view style="height: 60px; flex:1">
+					<text
+						class="gamename h1">{{item.gamename.length>11?item.gamename.slice(0,10)+'..':item.gamename}}</text>
+					<view class="tags">
+						<!-- <text class="tag">#{{item.one_word.length>14?item.one_word.slice(0,12)+'..':item.one_word}}</text> -->
+						<!-- <text class="tag">#{{item.selling_point.length>14?item.selling_point.slice(0,14).replace(/,/g,"#")+'...' :item.selling_point.replace(/,/g,"#")}}</text>
+						<image src="@/static/images/index/tagst.png" mode="widthFix" style="width: 20rpx;height: 20rpx;" class="tagImage"></image> -->
+						<text class="tag"
+							:style="{color: tagsColor[index].color, backgroundColor: tagsColor[index].bgc}"
+							v-for="(v,index) in (item.selling_point.split(',').slice(0,2))">{{v}}</text>
+					</view>
+					<view class="listBottom">
+						<view class="" style="flex-direction: row;align-items: center;"
+							v-if="item.start_time.length||typeof item.start_time=='number'">
+							<text class="text" style="color: #FF5927;" v-if="typeof item.start_time=='number'">
+								{{item.start_time|dateFormat('hh:mm')}}</text>
+							<text class="text" style="color: #FF5927;" v-else>
+								{{item.start_time[0]|dateFormat('hh:mm')}}</text>
+							<text class="text"> 开服 | </text>
+						</view>
+						<text class="type text" v-if="item.classify==5">H5</text>
+						<text class="type text" v-for="(v,i) in item.type" :key="i" v-if="i<2"
+							style="color: #ED6D47;">{{v}}</text>
+						<text class="user_cnt text"> | 已有{{item.popularity_cnt}}人在玩</text>
+					</view>
+				</view>
+				<view v-if="type==6"
+					style="flex-direction: row;align-items: center; position: absolute; right: 0; top: 6px;">
+					<image src="@/static/images/star_red.png" mode="scaleToFill" style="width: 24rpx;height: 24rpx;margin-right: 10rpx;"></image>
+					<text style="color: #ff5927;font-size: 32rpx;">{{item.star_cnt}}</text>
+				</view>
+				<view class="rates" v-if="type==1||type==3||type==7">
+					<view class="rate_item" v-if="item.rate<1">
+						<text class="rate_text">{{(item.rate*10).toFixed(1)}} </text><text class="rate_text"
+							style="font-size: 20rpx;"> 折</text>
+					</view>
+					<text v-else-if="item.has_coupons" class="rate" style="color:#19BFFF;">优惠券</text>
+					<text v-else-if="item.has_rebate" class="rate" style="color:#19BFFF;">返 利</text>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			item: {
+				type: Object,
+				default: () => {}
+			},
+			type: {
+				type: Number,
+				default: 0 //type为5时为首页热门榜样式,6展示星星
+			},
+			itemIndex: {
+				type: Number,
+				default: 1
+			},
+			tagsColor: {
+				type: Array,
+				default: [{
+						color: '#FEAF36',
+						bgc: '#FEF7EC'
+					},
+					{
+						color: '#28D58B',
+						bgc: '#E9FBF3'
+					}
+				]
+			}
+		},
+		computed: {
+			myWidth() {
+				return uni.getSystemInfoSync().windowWidth
+			}
+		},
+		methods: {
+			handleRouter(id) {
+				uni.navigateTo({
+					url: `/pages/view/gamedetail/gamedetail?gameid=${id}`
+				})
+			}
+		},
+		filters: {
+			// 1.日期格式过滤器
+			dateFormat(value, fmt) {
+				let getDate = new Date(value * 1000);
+				let o = {
+					"M+": getDate.getMonth() + 1,
+					"d+": getDate.getDate(),
+					"h+": getDate.getHours(),
+					"m+": getDate.getMinutes(),
+					"s+": getDate.getSeconds(),
+					"q+": Math.floor((getDate.getMonth() + 3) / 3),
+					S: getDate.getMilliseconds(),
+				};
+				if (/(y+)/.test(fmt)) {
+					fmt = fmt.replace(
+						RegExp.$1,
+						(getDate.getFullYear() + "").substr(4 - RegExp.$1.length)
+					);
+				}
+				for (let k in o) {
+					if (new RegExp("(" + k + ")").test(fmt)) {
+						fmt = fmt.replace(
+							RegExp.$1,
+							RegExp.$1.length === 1 ?
+							o[k] :
+							("00" + o[k]).substr(("" + o[k]).length)
+						);
+					}
+				}
+				return fmt;
+			}
+		}
+
+	}
+</script>
+
+<style scoped>
+	.item {
+		flex-direction: row;
+		align-items: center;
+		height: 60px;
+		margin-bottom: 16px;
+	}
+
+	.gameDetail {
+		position: relative;
+		padding: 0px 25px 0px 10px;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		height: 60px;
+	}
+
+	.gamename {
+		color: #000000;
+		line-height: 22px;
+		font-weight: 500;
+		font-size: 16px;
+		lines: 1;
+		max-width: 180px;
+	}
+
+	.listBottom {
+		flex-direction: row;
+		align-items: center;
+		/* 	padding: 0 0rpx 20rpx 30rpx; */
+	}
+
+	.type {
+		margin: 0 4rpx;
+	}
+
+	.text {
+		color: #666666;
+		font-size: 22rpx;
+		font-weight: 300;
+	}
+
+	.titleLine {
+		height: 6rpx;
+	}
+
+	.tags {
+		margin: 4px 0;
+		flex-direction: row;
+		align-items: center;
+		position: relative;
+	}
+
+	.tagImage {
+		position: absolute;
+		top: 8rpx;
+		left: 14rpx;
+	}
+
+	.tag {
+		font-weight: 400;
+		font-size: 12px;
+		/* height: 30rpx;
+		line-height: 30rpx; */
+		lines: 1;
+		padding: 2rpx 10rpx 2rpx 10rpx;
+		border-radius: 20rpx;
+		/* background-color: #F4F4F4; */
+		margin-right: 15rpx;
+		line-height: 16px;
+		height: 16px;
+	}
+
+	.rates {
+		margin: 0rpx 32rpx;
+	}
+
+	.rate_item {
+		border: 1px solid #E4E4E4;
+		flex-direction: row;
+		align-items: flex-end;
+		justify-content: center;
+		border-radius: 32rpx;
+		padding: 8rpx 16rpx;
+
+	}
+
+	.rate_text {
+		color: #FF5927;
+		font-size: 28rpx;
+		font-weight: 600;
+	}
+
+	.rate {
+		font-size: 26rpx;
+		width: 120rpx;
+		font-weight: 600;
+		color: #FF5927;
+		padding: 8rpx 16rpx;
+		border-radius: 32rpx;
+		text-align: center;
+		border: 2rpx solid #E4E4E4;
+	}
+
+	.icon {
+		width: 60px;
+		height: 60px;
+		/* border-radius: 30rpx; */
+		overflow: hidden
+	}
+
+	.numbers {
+		position: absolute;
+		top: 0;
+		left: -2rpx;
+
+	}
+</style>

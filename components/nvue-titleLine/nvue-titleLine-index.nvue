@@ -1,0 +1,360 @@
+<template>
+	<view class="nvue-titleLine">
+		<scroll-view ref="scroller" class="scroller" :show-scrollbar="false" :scroll-x="scrollable" :scroll-left="scrollLeft">
+			<view class="nav">
+				<view class="tabitem" :ref="`tabitem-${index}`" v-for="(item,index) in TitleList" :key='index' :style="{height: itemHeight + 'px', flex: scrollable ? '' : 1}"
+					@tap="handleClick(item, index)" :class="[`tabitem-${index}`]">
+					<text class="tabitem__text" ref='tabitem__text' :class="[item.disabled && 'tabitem__text--disabled', index == innerCurrent && 'tabitem__text--active']" :style="{color: textColor, fontSize: itemSize + 'px'}">{{item.name}}</text>
+				</view>
+				<view class="line" ref="line" :style="{width: lineWidth + 'px', height: lineHeight + 'px', backgound: lineColor, backgroundSize: lineBgSize}" ></view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script>
+	const dom = uni.requireNativePlugin('dom')
+	const animation = uni.requireNativePlugin('animation')
+	import common from "@/common/js/common.js";
+	export default {
+		props: {
+			TitleList: {
+				type: Array,
+				default: () => []
+			},
+			lineColor: {
+				type: String,
+				default: '#FF5927'
+			},
+			duration: {
+				type: Number,
+				default: 300
+			},
+			lineWidth: {
+				type: Number,
+				default: 20
+			},
+			lineHeight: {
+				type: Number,
+				default: 3
+			},
+			lineBgSize: {
+				type: String,
+				default: 'cover'
+			},
+			itemSize: {
+				type: Number,
+				default: 15
+			},
+			itemHeight: {
+				type: Number,
+				default: 44
+			},
+			scrollable: {
+				type: Boolean,
+				default: true
+			},
+			current: {
+				type: Number,
+				default: 0
+			},
+			scrollMove: {
+				type: Number,
+				default: 0
+			},
+			textColor: {
+				type: String,
+				default: '#666666'
+			},
+			isCanChange: {
+				type: Boolean,
+				default: true
+			},
+			isActives: {
+				default: false
+			},
+		},
+		data() {
+			return {
+				firstTime: true,
+				scrollLeft: 0,
+				scrollViewWidth: 0,
+				lineOffsetLeft: 0,
+				tabsRect: {
+					left: 0
+				},
+				tabsRectLineOffsetL: [],
+				innerCurrent: 0,
+				titleItemWidth:0,
+				isActive: false,
+			}
+		},
+		computed: {
+			myHeight() {
+				return uni.getSystemInfoSync().windowHeight * (750 / uni.getSystemInfoSync().windowWidth)
+			},
+		},
+		mounted() {
+			// console.log('tileLine-mounted')
+			setTimeout(()=>{
+			  this.resize()
+			},30)
+			
+			this.$nextTick(() => {
+				this.setLineOffsetL()
+			})
+		},
+		methods: {
+			// 优先计算出line分别位于每个title的位置
+			setLineOffsetL() {
+				this.getAllItemRect().then((itemRect = []) => {
+					// console.log('itemRect', itemRect)
+					itemRect.map((item, index) => {
+						// 另外计算每一个item的中心点X轴坐标
+						this.TitleList[index].rect = item
+					})
+					// console.log('TitleList', this.TitleList)
+					const lineWidth = common.getPx(this.lineWidth)
+					this.TitleList.reduce((total, curr, index) => {
+						this.tabsRectLineOffsetL[index] = this.TitleList.slice(0, index).reduce((total, curr) => total + curr.rect.width, 0) + (curr.rect.width - lineWidth) / 2
+					}, 0)
+					// console.log('tabsRectLineOffsetL', this.tabsRectLineOffsetL)
+				})
+			},
+			setLineLeft() {
+				const tabItem = this.TitleList[this.innerCurrent]
+				if (!tabItem) {
+					return;
+				}
+				
+				// console.log('setLineLeft')
+				// 获取滑块该移动的位置
+				let lineOffsetLeft = this.TitleList
+					.slice(0, this.innerCurrent)
+					.reduce((total, curr) => total + curr.rect.width, 0);
+				
+				// 获取下划线的数值px表示法
+				const lineWidth = common.getPx(this.lineWidth)
+				this.lineOffsetLeft = lineOffsetLeft + (tabItem.rect.width - lineWidth) / 2
+				
+				// console.log('innerCurrent', this.innerCurrent, 'current', this.current, 'lineOffsetLeft', this.lineOffsetLeft)
+				// #ifdef APP-NVUE
+				// 第一次移动滑块，无需过渡时间
+				this.animation(this.lineOffsetLeft, this.firstTime ? 0 : parseInt(this.duration))
+				// #endif
+			
+				// 如果是第一次执行此方法，让滑块在初始化时，瞬间滑动到第一个tab item的中间
+				// 这里需要一个定时器，因为在非nvue下，是直接通过style绑定过渡时间，需要等其过渡完成后，再设置为false(非第一次移动滑块)
+				if (this.firstTime) {
+					setTimeout(() => {
+						this.firstTime = false
+					}, 10);
+				}
+			},
+			// nvue下设置滑块的位置
+			animation(x, duration = 0) {
+				// #ifdef APP-NVUE
+				const ref = this.$refs['line']
+				animation.transition(ref, {
+					styles: {
+						transform: `translateX(${x}px)`
+					},
+					duration
+				})
+				// #endif
+			},
+			setScrollLeft() {
+				// 当前活动tab的布局信息，有tab菜单的width和left(为元素左边界到父元素左边界的距离)等信息
+				const tabRect = this.TitleList[this.innerCurrent]
+				// 累加得到当前item到左边的距离
+				const offsetLeft = this.TitleList
+					.slice(0, this.innerCurrent)
+					.reduce((total, curr) => {
+						return total + curr.rect.width
+					}, 0)
+				// 此处为屏幕宽度
+				const windowWidth = uni.$u.sys().windowWidth
+				// 将活动的tabs-item移动到屏幕正中间，实际上是对scroll-view的移动
+				let scrollLeft = offsetLeft - (this.tabsRect.width - tabRect.rect.width) / 2 - (windowWidth - this.tabsRect
+					.right) / 2 + this.tabsRect.left / 2
+				// 这里做一个限制，限制scrollLeft的最大值为整个scroll-view宽度减去tabs组件的宽度
+				scrollLeft = Math.min(scrollLeft, this.scrollViewWidth - this.tabsRect.width)
+				this.scrollLeft = Math.max(0, scrollLeft)
+			},
+			// 获取所有标签的尺寸
+			resize() {
+				// 如果不存在TitleList，则不处理
+				if(this.TitleList.length === 0) {
+					return
+				}
+				
+				Promise.all([this.getTabsRect(), this.getAllItemRect()]).then(([tabsRect, itemRect = []]) => {
+					this.tabsRect = tabsRect
+					this.scrollViewWidth = 0
+					itemRect.map((item, index) => {
+						// 计算scroll-view的宽度，这里
+						this.scrollViewWidth += item.width
+						// 另外计算每一个item的中心点X轴坐标
+						this.TitleList[index].rect = item
+					})
+					// 获取了tabs的尺寸之后，设置滑块的位置
+					this.setLineLeft()
+					this.setScrollLeft()
+				})
+			},
+			// 获取导航菜单的尺寸
+			getTabsRect() {
+				return new Promise(resolve => {
+					this.queryRect('scroller').then(size => resolve(size))
+				})
+			},
+			// 获取所有标签的尺寸
+			getAllItemRect() {
+				return new Promise(resolve => {
+					const promiseAllArr = this.TitleList.map((item, index) => this.queryRect(
+						`tabitem-${index}`, true))
+					Promise.all(promiseAllArr).then(sizes => resolve(sizes))
+				})
+			},
+			// 获取各个标签的尺寸
+			queryRect(el, item) {
+				// #ifdef APP-NVUE
+				// nvue下，使用dom模块查询元素高度
+				// 返回一个promise，让调用此方法的主体能使用then回调
+				return new Promise(resolve => {
+					dom.getComponentRect(item ? this.$refs[el][0] : this.$refs[el], res => {
+						resolve(res.size)
+					})
+				})
+				// #endif
+			},
+			// 切换
+			handleClick(item, index) {
+				// console.log('isCanChange', this.isCanChange)
+				if (this.isCanChange) {
+					if (item.disabled) return
+					// this.innerCurrent = index
+					this.$emit('active', index)
+					this.$emit('isactive', false)
+					this.isActive = false
+					// this.setLineLeft()
+					// this.resize()
+				}
+				// console.log('widthLine', this.widthLine, 'e', e)
+			}
+		},
+		watch: {
+			current: {
+				immediate: true,
+				handler (newValue, oldValue) {
+					// 内外部值不相等时，才尝试移动滑块
+					if (newValue !== this.innerCurrent) {
+						this.innerCurrent = newValue
+						this.$nextTick(() => {
+							if (!this.isActive) {
+								this.resize()
+							}
+						})
+					}
+				}
+			},
+			scrollMove: {
+				handler (newValue, oldValue) {
+					if (this.isActive) {
+						const windowWidth = uni.getSystemInfoSync().windowWidth
+						let changeNum = Math.ceil(Math.abs(this.scrollMove / windowWidth))
+						if((this.innerCurrent == (this.TitleList.length - 1) && newValue >= 0) || (this.innerCurrent == 0 && newValue <= 0)){
+							this.lineOffsetLeft = this.tabsRectLineOffsetL[this.innerCurrent]
+						}else{
+							if (newValue < 0) {
+								if(changeNum > this.innerCurrent) { return; } 
+								let lastOffsetL = this.tabsRectLineOffsetL[this.innerCurrent - changeNum]
+								let nextOffsetL = this.tabsRectLineOffsetL[this.innerCurrent - changeNum + 1]
+								let moveOffsetL = (nextOffsetL - lastOffsetL) * ((windowWidth - (Math.abs(newValue) % windowWidth || windowWidth)) / windowWidth)
+								this.lineOffsetLeft = lastOffsetL + moveOffsetL
+								// console.log('scrollMove', newValue, 'innerCurrent', this.innerCurrent, 'current', this.current, 'changeNum', changeNum, 'moveOffsetL', moveOffsetL, 'lineOffsetLeft', this.lineOffsetLeft)
+							} else if (newValue > 0) {
+								if(changeNum > this.TitleList.length - 1 - this.innerCurrent) { return; }
+								let lastOffsetL = this.tabsRectLineOffsetL[this.innerCurrent + changeNum - 1] 
+								let nextOffsetL = this.tabsRectLineOffsetL[this.innerCurrent + changeNum]
+								let moveOffsetL = (nextOffsetL - lastOffsetL) * (Math.abs(newValue) % windowWidth / windowWidth || 1)
+								this.lineOffsetLeft = lastOffsetL + moveOffsetL
+								// console.log('scrollMove', newValue, 'innerCurrent', this.innerCurrent, 'current', this.current, 'changeNum', changeNum, 'moveOffsetL', moveOffsetL, 'lineOffsetLeft', this.lineOffsetLeft)
+							}
+							this.animation(this.lineOffsetLeft)
+						}	
+						// if (this.scrollMove < 0) {
+						// 	if(this.innerCurrent == 0 || changeNum > this.innerCurrent) { return; } 
+						// 	let lastOffsetL = this.tabsRectLineOffsetL[this.innerCurrent - changeNum]
+						// 	let nextOffsetL = this.tabsRectLineOffsetL[this.innerCurrent - changeNum + 1]
+						// 	let moveOffsetL = (nextOffsetL - lastOffsetL) * ((windowWidth - Math.abs(this.scrollMove) % windowWidth) / windowWidth)
+						// 	this.lineOffsetLeft = lastOffsetL + moveOffsetL
+						// 	// console.log('isMove', isMove, 'scrollMove', this.scrollMove, 'innerCurrent', this.innerCurrent, 'current', this.current, 'changeNum', changeNum, 'moveOffsetL', moveOffsetL, 'lineOffsetLeft', this.lineOffsetLeft)
+						// } else if (this.scrollMove > 0) {
+						// 	if(this.innerCurrent == this.TitleList.length - 1 || changeNum > this.TitleList.length - 1 - this.innerCurrent) { return; }
+						// 	let lastOffsetL = this.tabsRectLineOffsetL[this.innerCurrent + changeNum - 1] 
+						// 	let nextOffsetL = this.tabsRectLineOffsetL[this.innerCurrent + changeNum]
+						// 	let moveOffsetL = (nextOffsetL - lastOffsetL) * (Math.abs(this.scrollMove) % windowWidth / windowWidth)
+						// 	this.lineOffsetLeft = lastOffsetL + moveOffsetL
+						// 	// console.log('isMove', isMove, 'scrollMove', this.scrollMove, 'innerCurrent', this.innerCurrent, 'current', this.current, 'changeNum', changeNum, 'moveOffsetL', moveOffsetL, 'lineOffsetLeft', this.lineOffsetLeft)
+						// }
+						
+					}
+				}
+			},
+			isActives(val) {
+				this.isActive = val 
+			}
+		}
+	}
+</script>
+
+<style scoped>
+	/* @import '@/common/css/nvue-whith.css'; */
+	.nvue-titleLine {
+		flex-direction: row;
+		align-items: center;
+	}
+	
+	.scroller {
+		flex-direction: row;
+		flex: 1;
+	}
+	
+	.nav {
+		flex-direction: row;
+		position: relative;
+	}
+	
+	.tabitem {
+		flex-direction: row;
+		padding: 0 11px;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.tabitem__text {
+		/* font-size: 15px; */
+		color: #666666;
+	}
+	
+	.tabitem__text--disabled {
+		color: #c8c9cc !important;
+	}
+	
+	.tabitem__text--active {
+		color: #1c1c1c;
+		font-weight: 700;
+	}
+	
+	.line {
+		height: 3px;
+		background-color: #ffffff;
+		width: 30px;
+		position: absolute;
+		bottom: 2px;
+		border-radius: 100px;
+		/* transition-property: transform;
+		transition-duration: 300ms; */
+	}
+</style>

@@ -1,0 +1,198 @@
+<template>
+	<view class="nvue-titleLine">
+		<scroller ref="scroller" scroll-direction="horizontal" :show-scrollbar="false" style="flex-direction: row;width: 320px;">
+			<view class="titles">
+				<view class="titleItem">
+					<view v-for="(item,index) in TitleList" :key='index'  style="align-items: center; flex-direction: row; justify-content: center;"
+						:style="{marginRight:40+'px'}" ref="tabitem" :id="item.id"> 
+						<text class="TitleName" @click="handleClick(index)" ref='TitleName' :class="[{TitleName1:active==index}]">{{item.name}}</text>
+					</view>
+				</view>
+				<view :style="{transform:'translateX('+(widthLine)+'px)',width:'54px',marginLeft:'13px',backgroundColor:lineColor}" class="lines" ref="lines"></view>
+			</view>
+		</scroller>
+
+	</view>
+</template>
+
+<script>
+	const dom = uni.requireNativePlugin('dom')
+	const BindingX = uni.requireNativePlugin('bindingx');
+	import common from "@/common/js/common.js";
+	export default {
+		props: {
+			TitleList: {
+				type: Array,
+				default: () => []
+			},
+			length:{
+				type:Number,
+				default:0
+			},
+			active: {
+				type: Number,
+				default: 0
+			},
+			scrollMove: {
+				type: Number,
+				default: 0
+			},
+			number: {
+				type: Number,
+				default: 0
+			},
+			isActives: {
+				default: false
+			},
+			myWidth:{
+				default: uni.getSystemInfoSync().windowWidth
+			},
+			lineColor: {
+				type: String,
+				default: '#FF5927'
+			},
+			textColor: {
+				type: String,
+				default: '#666666'
+			}
+		},
+		data() {
+			return {
+				actives: 0,
+				isActive: false,
+				widthLine:0,
+				titleItemWidth:0,
+				linesWidth:0,
+			
+			}
+		},
+		computed: {
+			// widthLine() {
+			// 	return this.scrollMove / 3
+			// },
+			myHeight() {
+				return uni.getSystemInfoSync().windowHeight * (750 / uni.getSystemInfoSync().windowWidth)
+			},
+		},
+		methods: {
+			// 切换
+			handleClick(e) {
+				this.$emit('active', e)
+				this.$emit('isactive', false) 
+				this.isActive = false
+				this.widthLine = 120 * e
+			},
+			getline_Width(index){
+				dom.getComponentRect(this.$refs.tabitem[index], res => {
+					this.linesWidth = res.size.width
+				});
+			},
+			
+			getWidth(){
+				this.$refs.tabitem.map(item=>{
+					dom.getComponentRect(item, res => {
+						this.titleItemWidth += res.size.width + ( this.myWidth / 3 - 100)
+					   
+					});
+				})
+				
+			},
+			scrollTabTo(index) {
+			  const el = this.$refs.tabitem[index];
+			  let offset = 0;
+			  // if (index > 0) {
+			  //   offset = this.tabbarWidth / 2 - this.tabListSize[index].width / 2;
+			  //   if (this.tabListSize[index].right < this.tabbarWidth / 2) {
+			  //     offset = this.tabListSize[0].width;
+			  //   }
+			  // } 
+			  dom.scrollToElement(el, { offset});
+			},
+			
+			
+		},
+		watch: {
+			active(val) {
+				if (val > this.actives) {
+					this.actives = val
+					this.scrollTabTo(val)
+				} else {
+					this.scrollTabTo(val-1<0?0:val-1)
+				}
+				 this.getline_Width(val)
+			},
+			scrollMove(val) {
+				
+				if(this.number==(this.length-1)&&val>=0){		
+					this.widthLine = (this.length-1) * (120)
+				}else if(this.number==0&&val<=0){				
+					this.widthLine = 0
+				}else{
+					if (this.isActive) {
+						this.widthLine = (120 * this.number) + (val / this.myWidth * (120))
+					}
+				}		
+			},
+			isActives(val) {
+				this.isActive = val 
+			}
+		},
+		mounted() {
+			// console.log('tileLine-mounted')
+			setTimeout(()=>{
+			  this.getWidth()
+			  this.getline_Width(0)
+			},100)
+		}
+
+
+	}
+</script>
+
+<style scoped>
+	/* @import '@/common/css/nvue-whith.css'; */
+	.nvue-titleLine {
+		width: 320px;
+	}
+	
+	.lines {
+		height: 6rpx;
+		background-color: #FF5927;
+		/* margin-left: 6px; */
+		border-radius: 6rpx;
+/* 		transition-property:width,transform;
+		transition-duration:0.2s;
+		transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1); */
+	}
+
+	.titleItem {
+		width: 320px;
+		display: flex;
+		justify-content: space-between;
+		flex-direction: row;
+		
+	}
+
+
+
+	.TitleName {
+		color: #1C1C1C;
+		padding-bottom: 4px;
+		font-weight: 500;
+		font-size: 17px;
+		/* line-height: 22px; */
+		lines: 1;
+		width: 80px;
+		text-align: center;
+		/* border: 1rpx solid blue; */
+	}
+
+	.TitleName1 {
+		color: #FF5927;
+		font-weight: 700;
+		/* font-size: 40rpx; */
+	
+
+
+	}
+</style>

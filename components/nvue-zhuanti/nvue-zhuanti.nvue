@@ -1,0 +1,126 @@
+<template>
+	<view class="topic">
+		<image :src="topicData.image" mode="widthFix" :style="{width:myWidth-64+'px'}"
+		 style="border-top-right-radius: 12rpx;border-top-left-radius: 12rpx;"
+		  @click="handleRouter(topicData.game_id)"></image>
+		<view class="btm-box" :style="{width:myWidth-64+'px',paddingLeft:'152rpx'}" v-if="type && itemIndex!=0">
+			<view style="flex: 1;">
+				<text class="text" style="color: #FFFFFF;font-size: 28rpx;">{{topicData.game_name}}</text>
+				<text class="text" style="color: #E4E4E4;font-size: 24rpx;">{{topicData.one_word}}</text>
+			</view>
+		</view>
+		<view class="btm-box" :style="{width:myWidth-64+'px',paddingLeft:'20rpx' }" v-else-if="itemIndex==0">
+			<view style="flex: 1;">
+				<text class="text" style="color: #FFFFFF;font-size: 28rpx;">{{topicData.topic_name}}</text>
+				<text class="text" style="color: #E4E4E4;font-size: 24rpx;">{{topicData.description}}</text>
+			</view>
+		</view>
+		<image :src="topicData.icon || topicData.new_icon" style="width: 108rpx;height: 108rpx;
+		border-radius: 20rpx;margin-right: 24rpx;position: absolute;left: 20rpx;bottom: 16rpx;" v-if="type && itemIndex!=0"></image>
+		<view class="box-btn-more" v-if="showBtn">
+			<text class="box-btn-text" @click="specialRouter(topicData.topic_name,topicData.topic_id)">{{'查看更多>>'}}</text>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			topicData: {
+				type: Object,
+				default: () => {}
+			},
+			myWidth: {
+				type: Number,
+			},
+			type: {
+				type: Number,
+				default: 0,
+			},
+			itemIndex: {
+				type: Number,
+			},
+			showBtn: {
+				type: Boolean,
+				default: false
+			}
+		},
+		methods: {
+			handleRouter(id) {
+				uni.navigateTo({
+					url: `/pages/view/gamedetail/gamedetail?gameid=${id}`
+				})
+			},
+			//专题跳转
+			specialRouter(name, id) {
+				uni.navigateTo({
+					url: `/pages/game/children/special?name=${name}&id=${id}`
+				})
+			},
+		},
+
+	}
+</script>
+
+<style scoped>
+.topic {
+	position: relative;
+	
+}
+.btm-box {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	flex-direction: row;
+	align-items: flex-end;
+	height: 100rpx;
+	padding: 0 20rpx 16rpx 152rpx;
+	background-color: rgba(0,0,0,0.5);
+}
+
+.btm-box1 {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	height: 100rpx;
+	padding: 0 20rpx 16rpx 0;
+	background-color: rgba(0,0,0,0.5);
+}
+
+.text {
+	lines: 1;
+	width: 220px;
+	text-overflow: ellipsis;
+}
+
+.text1 {
+	lines: 1;
+	width: 220px;
+	text-overflow: ellipsis;
+	font-size: 32rpx;
+	color: #FFF;
+	font-weight: 700;
+}
+
+	.box-btn-more {
+		position: absolute;
+		justify-content: center;
+		align-items: center;
+		right: -5px;
+		bottom: 8px;
+		width: 109px;
+		height: 31px;
+		border-top-left-radius: 15px;
+		border-bottom-left-radius: 15px;
+		background-color: #ff5927;
+		opacity: .9;
+	}
+	
+	.box-btn-text {
+		color: #FFEBF2;
+		opacity: .9;
+		font-size: 14px;
+		font-weight: 500;
+		/* width: 56px; */
+	}
+</style>

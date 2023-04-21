@@ -1,0 +1,130 @@
+<template>
+	<view class="nvue-popGift" :style="{width:$store.state.myWidth+'px',height: $store.state.myHeight+'rpx'}" v-if="myIsShow" @click="closePopGift">
+		<view class="popGift" ref='popGift' :style="{width:$store.state.myWidth+'px'}" @click="notClosePopGift">
+      <slot></slot>
+		</view>
+
+	</view>
+</template>
+
+<script>
+	const BindingX = uni.requireNativePlugin('bindingx');
+	import common from "@/common/js/common.js";
+	export default {
+		props: {
+			nheight:{
+				type:Number,
+				default:10
+			},
+			easing:{
+				type:String,
+				default:'easeOutQuart'
+			},
+			ntime:{
+				type:Number,
+				default:200
+			},
+			isShow:{
+				type:Boolean,
+				default:false
+			}
+		},
+		data() {
+			return {
+				myIsShow: false,
+				isNotClose:false,
+			}
+		},
+		methods: {
+			closePopGift() {
+				if (!this.isNotClose) {
+					this.$emit('closeGift', true)
+				} else {
+					this.isNotClose = false
+				}
+			},
+			notClosePopGift() {
+				this.isNotClose = true
+			},
+			getShow() {
+				let popGift = common.getEl(this.$refs.popGift);
+				let mybindin = BindingX.bind({
+					eventType: 'timing',
+					exitExpression: 't>400',
+					props: [{
+						element: popGift,
+						property: 'height', //动画属性
+						expression: `${this.easing}(t,0,${this.nheight},${this.ntime})`
+						
+					}]
+				}, e => {
+					if (e.state === 'exit') {
+						BindingX.unbind({
+							token: mybindin.token,
+							eventType: 'timing'
+						})
+					}
+				});
+			},
+			getClose() {
+				console.log('getClose')
+				let popGift = common.getEl(this.$refs.popGift);
+				let mybindin = BindingX.bind({
+					eventType: 'timing',
+					exitExpression: 't>400',
+					props: [{
+						element: popGift,
+						property: 'height', //动画属性
+						expression: `linear(t,${this.nheight},-${this.nheight},${this.ntime})`
+					}]
+				}, e => {
+					if (e.state === 'exit') {
+						BindingX.unbind({
+							token: mybindin.token,
+							eventType: 'timing'
+						})
+					}
+				});
+			}
+		},
+		mounted() {
+			// this.getShow()
+		},
+		watch: {
+			isShow: { //深度监听，可监听到对象、数组的变化
+				handler(val) {
+					console.log(val,'isShow')
+					if (val) {
+						this.myIsShow = val
+						setTimeout(()=>{
+						this.getShow()
+						},100)
+					} else {
+						this.getClose()
+						setTimeout(()=>{
+							this.myIsShow = val
+						},300)
+					}
+				},
+				// immediate: true
+			}
+		}
+
+	}
+</script>
+
+<style scoped>
+	.nvue-popGift {
+		position: fixed !important;
+		top: 0;
+		background: rgba(0, 0, 0, .4);
+		flex-direction: column-reverse;
+	}
+
+	.popGift {
+		height: 0rpx;
+		background-color: #FFFFFF;
+		border-top-left-radius: 20rpx;
+		border-top-right-radius: 20rpx;
+	}
+</style>

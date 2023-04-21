@@ -1,0 +1,151 @@
+<template>
+	<!-- 首页隐私政策 -->
+	<view class="agreement"  @click.stop="doThis">
+		<view class="flex justify-center position-absolute" style="padding-top: 0rpx;background: rgba(60,60,60,0.8);" :style="`width: ${windowWidth}px;height: ${screenHeight}px;`">
+			<view class="flex flex-column bg-white rounded-3 shadow-lg" style="margin-top: 460rpx;width: 600rpx;height: 700rpx;" v-if="status == 0">
+				<view class="flex align-center justify-center border-bottom" style="height: 120rpx;">
+					<text class="font-weight-bolder">隐私保护指引概要</text>
+				</view>
+				<view class="flex-1 my-2 pt-0 px-3">
+					<text class="text-muted font">    请您务必审慎阅读、充分理解“用户协议”和“隐私政策”各条,款，包括但不限于：为了更好的向您提供服务，我们需要收集您的设备标识、操作日志等信息用于分析、优化应用性能。</text>
+					<br/><br/><br/>
+					<view class="flex">
+						<text class="text-muted font">    您可阅读</text>
+						<text class="font text-agree font-weight-bolder" @click="handleAmunt(2)">《用户协议》</text>
+						<text class="text-muted font">和</text>
+						<text class="font text-agree font-weight-bolder" @click="handleAmunt(1)">《隐私政策》</text>
+					</view>　
+					<text class="text-muted font">了解详细信息。如果您同意，请点击下面按钮开始接受我们的服务。</text>
+				</view>
+				<view class="flex" style="height: 150rpx;">
+					<view class="flex align-center justify-center flex-1" @click="refuse">
+						<text class="border border-light bg-light text-center py-2 rounded-3 text-muted col-4 font">不同意</text>
+						</view>
+					<view class="flex align-center justify-center flex-1" style="border-bottom-right-radius: 15rpx;" @click="submit">
+						<text class="border border-light text-center py-2 rounded-3 text-white col-4 bg-agree font">同意</text>
+					</view>
+				</view>
+			</view>
+			
+			<view class="flex flex-column bg-white rounded-3 shadow-lg" style="margin-top: 560rpx;width: 600rpx;height: 400rpx;" v-if="status == 1">
+				<view class="flex align-center justify-center border-bottom" style="height: 120rpx;">
+					<text class="font-weight-bolder">隐私保护指引概要</text>
+				</view>
+				<view class="flex-1 my-2 pt-0 px-3">
+					<text class="text-muted font">    您必须同意才能进入APP，再想想？
+					</text>
+				</view>
+				<!-- <view class="flex " style="height: 180rpx;">
+					<view class="flex align-center justify-center flex-1" @click="xieyi('2')"><text class="border px-4 py-2 bg-light rounded-3 font">用户协议</text></view>
+					<view class="flex align-center justify-center flex-1" @click="xieyi('1')"><text class="border px-4 py-2 bg-light rounded-3 font ">隐私政策</text></view>
+				</view> -->
+				<view class="flex" style="height: 150rpx;">
+					<view class="flex align-center justify-center flex-1" @click="quit">
+						<text class="border border-light bg-light text-center py-2 rounded-3 text-muted col-4 font">不同意并退出</text>
+						</view>
+					<view class="flex align-center justify-center flex-1" style="border-bottom-right-radius: 15rpx;" @click="goback">
+						<text class="border border-light text-center py-2 rounded-3 text-white col-4 bg-agree font">查看协议</text>
+					</view>
+				</view>
+			</view>
+			<view class="flex flex-column bg-white rounded-3 shadow-lg" :style="`margin-top: 100rpx;width: ${windowWidth}px;height: ${screenHeight-120}rpx;`" v-if="show">
+				<view class="flex align-center justify-center border-bottom" style="height: 120rpx;">
+					<!-- <text class="" @click="goback1"><</text> -->
+					<view class="icon align-center position-absolute" ref="iconleft" style="left:32rpx;" @click="goback1">
+						<image src="@/static/images/left.png" style="width: 40rpx;height: 40rpx;"></image>
+					</view>
+					
+					<text class="font-weight-bolder text-agree">{{title}}</text>
+				</view>
+				<view class="flex-1 my-2 px-3">
+					<web-view :src="url" :style="`width: ${windowWidth-40}px;height: ${windowHeight - 100}px;`" :webview-styles="webviewStyles"></web-view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	const globalData = getApp().globalData
+	export default {
+		data() {
+			return {
+				status: 0,
+				show: false,
+				title: '',
+				windowHeight: 0,
+				screenHeight: 0,
+				windowWidth: 0,
+				webviewStyles: {
+					progress: {
+						color: '#ff5927'
+					}
+				}
+			}
+		},
+		onLoad() {
+			const res = uni.getSystemInfoSync();
+			this.windowHeight = res.windowHeight
+			this.windowWidth = res.windowWidth
+			this.screenHeight = res.screenHeight * (750 / res.windowWidth)
+		},
+		methods: {
+			// 协议
+			handleAmunt(type){
+				this.status = 2;
+				this.show = true;
+				this.title = type == 2 ? '用户协议' : '隐私政策'
+				this.url = 'https://page.4000yx.com/active/agreement?agent_id=' + globalData.store.state.client_id +'&type=' + type
+				console.log(type,this.url)
+			},
+			doThis() {
+
+			},
+			// 同意隐私
+			submit(){
+				// plus.runtime.agreePrivacy();
+				// uni.reLaunch({
+				// 	url:"/pages/index/index"
+				// })
+				plus.runtime.agreePrivacy()
+				uni.$emit('agree', true)
+				// const subNVue = uni.getSubNVueById('advertising') 
+				// subNVue.show();
+			},
+			// 不同意
+			refuse(){
+				this.status = 1;
+			},
+			// 查看协议
+			goback(){
+				this.status = 0;
+			},
+			// 查看协议
+			goback1(){
+				this.status = 0;
+				this.show = false;
+			},
+			// 退出应用
+			quit(){
+				// console.log('aaaaaaa');
+				plus.runtime.disagreePrivacy();
+				if (uni.getSystemInfoSync().platform == 'ios'){
+				    plus.ios.import("UIApplication").sharedApplication().performSelector("exit")
+				} else if (uni.getSystemInfoSync().platform == 'android'){
+				    plus.runtime.quit();
+				}
+			},
+			xieyi(type){
+				uni.showToast({
+					title: 'https://page.4000yx.com/active/agreement?agent_id=' + globalData.store.state.client_id +'&type=' + type,
+					icon:'none'
+				});
+			}
+		}
+	}
+</script>
+
+<style scoped>
+@import '@/common/css/woniu.css';
+
+</style>

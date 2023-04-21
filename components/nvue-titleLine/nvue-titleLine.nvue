@@ -1,0 +1,206 @@
+<template>
+	<view class="nvue-titleLine">
+		<scroller ref="scroller" scroll-direction="horizontal" :show-scrollbar="false" style="flex-direction: row;">
+			<view class="titles">
+				<view class="titleItem" :style="{width: totalWidth + 'px'}">
+					<view v-for="(item,index) in TitleList" :key='index'  style="align-items: center;flex-direction: row; justify-content: center;" 
+						:style="{marginRight:30+'px'}" ref="tabitem" :id="item.id"> 
+						<text class="TitleName" @click="handleClick(index)" ref='TitleName' :class="[{TitleName1:active==index}]" :style="'color:'+textColor">{{item.name}}</text>
+					</view>
+				</view>
+				<view :style="{transform:'translateX('+(widthLine)+'px)',width:'24px',marginLeft:'9px',backgroundColor:lineColor}" class="lines" ref="lines"></view>
+			</view>
+		</scroller>
+
+	</view>
+</template>
+
+<script>
+	const dom = uni.requireNativePlugin('dom')
+	const BindingX = uni.requireNativePlugin('bindingx');
+	import common from "@/common/js/common.js";
+	export default {
+		props: {
+			TitleList: {
+				type: Array,
+				default: () => []
+			},
+			length:{
+				type:Number,
+				default:0
+			},
+			active: {
+				type: Number,
+				default: 0
+			},
+			scrollMove: {
+				type: Number,
+				default: 0
+			},
+			number: {
+				type: Number,
+				default: 0
+			},
+			isActives: {
+				default: false
+			},
+			myWidth:{
+				default: uni.getSystemInfoSync().windowWidth
+			},
+			lineColor: {
+				type: String,
+				default: '#FF5927'
+			},
+			textColor: {
+				type: String,
+				default: '#666666'
+			},
+			totalWidth: {
+				type: Number,
+				default: 0
+			},
+			isCanChange: {
+				type: Boolean,
+				default: true
+			}
+		},
+		data() {
+			return {
+				actives: 0,
+				isActive: false,
+				widthLine:0,
+				titleItemWidth:0,
+				linesWidth:0,
+			
+			}
+		},
+		computed: {
+			// widthLine() {
+			// 	return this.scrollMove / 3
+			// },
+			myHeight() {
+				return uni.getSystemInfoSync().windowHeight * (750 / uni.getSystemInfoSync().windowWidth)
+			},
+		},
+		methods: {
+			// 切换
+			handleClick(e) {
+				// console.log('isCanChange', this.isCanChange)
+				if (this.isCanChange) {
+					this.$emit('active', e)
+					this.$emit('isactive', false)
+					this.isActive = false
+					this.widthLine = 72 * e
+				}
+				// console.log('widthLine', this.widthLine, 'e', e)
+			},
+			getline_Width(index){
+				dom.getComponentRect(this.$refs.tabitem[index], res => {
+					this.linesWidth = res.size.width
+				});
+			},
+			
+			getWidth(){
+				this.$refs.tabitem.map(item=>{
+					dom.getComponentRect(item, res => {
+						this.titleItemWidth += res.size.width + ( this.myWidth / 3 - 99)
+					   
+					});
+				})
+				
+			},
+			scrollTabTo(index) {
+			  const el = this.$refs.tabitem[index];
+			  let offset = 0;
+			  // if (index > 0) {
+			  //   offset = this.tabbarWidth / 2 - this.tabListSize[index].width / 2;
+			  //   if (this.tabListSize[index].right < this.tabbarWidth / 2) {
+			  //     offset = this.tabListSize[0].width;
+			  //   }
+			  // } 
+			  dom.scrollToElement(el, { offset});
+			},
+			
+			
+		},
+		watch: {
+			active(val) {
+				if (val > this.actives) {
+					this.actives = val
+					this.scrollTabTo(val)
+				} else {
+					this.scrollTabTo(val-1<0?0:val-1)
+				}
+				 this.getline_Width(val)
+			},
+			scrollMove(val) {
+				if (this.isActive) {
+					if(this.number==(this.length-1)&&val>=0){
+						this.widthLine = (this.length-1) * 72
+					}else if(this.number==0&&val<=0){				
+						this.widthLine = 0
+					}else{
+						this.widthLine = (72 * this.number) + (val / this.myWidth * 72)
+					}	
+				} 
+				// console.log('widthLine', this.widthLine)
+			},
+			isActives(val) {
+				this.isActive = val 
+			}
+		},
+		mounted() {
+			// console.log('tileLine-mounted')
+			setTimeout(()=>{
+			  this.getWidth()
+			  this.getline_Width(0)
+			},100)
+		}
+
+
+	}
+</script>
+
+<style scoped>
+	/* @import '@/common/css/nvue-whith.css'; */
+
+	.lines {
+		height: 6rpx;
+		background-color: #FF5927;
+		/* margin-left: 6px; */
+		border-radius: 6rpx;
+/* 		transition-property:width,transform;
+		transition-duration:0.2s;
+		transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1); */
+	}
+
+	.titleItem {
+		/* display: flex;
+		justify-content: space-between; */
+		flex-direction: row;
+		
+	}
+
+
+
+	.TitleName {
+		width: 42px;
+		/* line-height: 34rpx; */
+		color: #666666;
+		padding-bottom: 10rpx;
+		font-weight: 300;
+		font-size: 34rpx;
+		text-align: center;
+		lines: 1;
+		
+	}
+
+	.TitleName1 {
+		color: #1c1c1c;
+		font-weight: 700;
+		/* font-size: 40rpx; */
+	
+
+
+	}
+</style>

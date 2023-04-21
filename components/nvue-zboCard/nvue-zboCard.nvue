@@ -1,0 +1,171 @@
+<template>
+	<view>
+		<view class="card" @click="see_zbo('/pages/talkAbout/children/zboDetail?item=',item.status)">
+			<image class="icon" :src="item.ext_info.hot_image"></image>
+			<view class="rates"
+				:style="{top:$store.state.platform=='ios'?'-12rpx':'-12rpx',left:$store.state.platform=='ios'?'-20rpx':'-20rpx'}">
+				<view class="rateimages" mode="widthFix"
+					:style="item.status == 2 ? 'background:#FF5927' : 'background:#666666'"></view>
+				<image style="position: absolute; width: 20rpx; height: 20rpx; top:20rpx;left:30rpx"
+					v-if="item.status ==1" mode="widthFix" src="@/static/images/talkAbout/zboNo.png"></image>
+				<image style="position: absolute; width: 20rpx; height: 20rpx; top:20rpx;left:30rpx" v-else
+					mode="widthFix" src="@/static/images/talkAbout/zboYes.png"></image>
+
+				<text class="rateText">{{item.status == 2 ? '直播中' : '未开播'}}</text>
+			</view>
+			<view class="shadow">
+
+				<view class="rates"
+					:style="{bottom:$store.state.platform=='ios'?'-25rpx':'-15px',left:$store.state.platform=='ios'?'-20rpx':'-20rpx'}">
+					<text class="rateText2">{{item.mem.nickname}}</text>
+				</view>
+				<view class="rates"
+					:style="{bottom:$store.state.platform=='ios'?'-25rpx':'-15px',right:$store.state.platform=='ios'?'-20rpx':'-25rpx'}">
+					<image class="rateImage"
+						:src="item.status == 2 ? '../../static/images/talkAbout/zboHot.png' : '../../static/images/talkAbout/zboCold.png'">
+					</image>
+					<text class="rateText1">{{item.online_num}}</text>
+				</view>
+			</view>
+		</view>
+		<text class="zboTitle" :style="{color: types==1 ? '#000':'#F7F7F7'}"  >{{item.name}}</text>
+	</view>
+</template>
+
+<script>
+	import common from "@/common/js/common.js";
+	export default {
+		data() {
+			return {
+			}
+		},
+		props: {
+			item: {
+				type: Object,
+				default: () => {}
+			},
+			myHeight: {
+				type: Number
+			},
+			myWidth: {
+				type: Number
+			},
+			types:{
+				type: Number
+			}
+		},
+		mounted() {
+		},
+		methods: {
+			see_zbo(url, status) {
+				if (status == 2) {
+					if (common.isLogin()) {
+						uni.navigateTo({
+							url: url + encodeURIComponent(JSON.stringify(this.item))
+						})
+						// uni.navigateTo({
+						// 	url: url +
+						// 		'?live_id=' + this.item.id +
+						// 		'&mem_img=' + this.item.mem.avatar +
+						// 		'&mem_nickname=' + this.item.mem.nickname +
+						// 		'&mem_subscribe_num=' + this.item.subscribe_num
+						// })
+					}
+				} else {
+					uni.showToast({
+						title: '该直播间暂未开启~',
+						icon: 'none'
+					})
+				}
+			},
+		}
+	}
+</script>
+
+<style scoped>
+	@import '@/common/css/nvue-whith.css';
+	.rates {
+		align-items: center;
+		justify-content: center;
+		position: absolute;
+		width: 130rpx;
+		height: 80rpx;
+	}
+
+	.rateImage {
+		width: 24rpx;
+		height: 24rpx;
+		position: absolute;
+		left: 10rpx;
+		top: 20rpx
+	}
+
+	.rateText {
+		font-size: 20rpx;
+		color: #fff;
+		position: absolute;
+		left: 60rpx;
+		top: 16rpx
+	}
+
+	.rateText2 {
+		font-size: 20rpx;
+		color: #fff;
+		position: absolute;
+		left: 30rpx;
+		top: 16rpx
+	}
+
+	.rateText1 {
+		font-size: 24rpx;
+		color: #fff;
+		position: absolute;
+		left: 50rpx;
+		top: 16rpx
+	}
+
+	.zboTitle {
+		margin: 5 0 10rpx;
+		font-size: 24rpx;
+		color: #F7F7F7;
+		font-weight: bold;
+	}
+
+	.rateimages {
+		border-radius: 8rpx 0 8rpx 0;
+		width: 130rpx;
+		height: 40rpx;
+		/* margin-left: 14rpx; */
+		margin-top: -20rpx;
+		margin-left: -8rpx;
+	}
+	
+	.card {
+		height: 180rpx;
+		border-radius: 8rpx;
+		/* margin: 6rpx 0 6rpx 16px; */
+		background-color: #fff;
+		position: relative;
+		overflow: hidden;
+	}
+	
+	.icon {
+		width: 330rpx;
+		height: 180rpx;
+		border-radius: 10rpx;
+	}
+
+	.shadow {
+		align-items: center;
+		position: absolute;
+		background: rgba(0, 0, 0, 0.39);
+		box-shadow: 0px 0px 8px #1C1C1C;
+		border-bottom-left-radius: 5rpx;
+		border-bottom-right-radius: 5rpx;
+		height: 50rpx;
+		width: 330rpx;
+		left: 0;
+		bottom: 0;
+		overflow: hidden;
+	}
+</style>

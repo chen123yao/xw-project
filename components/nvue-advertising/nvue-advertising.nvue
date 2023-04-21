@@ -1,0 +1,91 @@
+<template>
+	<view class="advertising" :style="`width: ${windowWidth}px;height: ${screenHeight}rpx;} `" @click.stop="stop">
+		<!-- <view class="mask" :style="`width: ${windowWidth}px;height: ${screenHeight}rpx;} `" /> -->
+		<view class="content" >
+			<image :src="url" mode="widthFix" style="width: 640rpx" @click="enter" ></image>
+			<!-- <image class="close" src="../../static/images/close.png" mode="aspectFit" style="width: 40rpx;height: 40rpx;" @click="close"></image> -->
+			
+			<view class="close" style="width: 40px;height: 40px;justify-content: center;align-items: center;"   @click="close">
+				<image src="../../static/images/closeAdverting.png" mode="widthFix"  style="width: 30px;"></image>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				url:'',
+				adv_name:'',
+				adv_url:'',
+				status:'',
+				windowWidth:''
+			}
+		},
+		onLoad(){
+			this.getImg()
+			const res = uni.getSystemInfoSync();
+			this.windowHeight = res.windowHeight
+			this.windowWidth = res.windowWidth
+			this.screenHeight = res.screenHeight * (750 / res.windowWidth)
+		},
+		
+		methods: {
+			getImg(){
+				uni.$on('advertising', (data) => {
+					console.log(data)
+					this.url = data.image
+					this.adv_name = data.adv_name
+					this.adv_url = data.adv_url
+					this.status = data.status
+				}) 
+			},
+			enter(){
+				uni.navigateTo({
+					url:`/pages/index/children/promote?adv_url=${this.adv_url}&adv_name=${this.adv_name}`
+				})
+				this.close()
+			},
+			close(){
+				// uni.$emit('advertising', true)
+				const subNVue = uni.getSubNVueById('advertising')  
+				subNVue.hide();
+			},
+			stop(){
+				
+			}
+		}
+	}
+</script>
+
+<style scoped>
+
+.advertising {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	/* background-color: rgba(0,0,0,.1); */
+}
+.mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	background-color: rgba(0, 0, 0, .5);
+	/* opacity: .5; */
+}
+.content {
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	width: 750rpx;
+	position: relative;
+}
+.close{
+	position: absolute;
+		right: 120rpx;
+		top: 0rpx;
+}
+
+</style>

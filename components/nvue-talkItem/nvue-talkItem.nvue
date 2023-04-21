@@ -1,0 +1,198 @@
+<template>
+	<view class="nvue-gameItem">
+		<view class="item" v-if="item"  @click="handleRouter(item.game.id,item.game.name)">
+			<view stye="width: 144rpx;height: 144rpx;border-radius: 40rpx;">
+				<image v-if="item.game.icon.length" :src="item.game.icon" mode="widthFix" style="width: 144rpx;height: 144rpx;border-radius: 40rpx;"></image>
+				<image v-else src="" mode="widthFix" style="width: 144rpx;height: 144rpx;border-radius: 40rpx;"></image>
+			</view>
+			<view class="gameDetail">
+				<view style="margin-bottom: 32rpx; margin-top: 34rpx;">
+					<text class="gamename"><{{item.game.name.length>11?item.game.name.slice(0,12)+'..':item.game.name}}>聊吧</text>
+					<view class="tags">
+						<text class="tag">#充值比例1:10#{{item.name}}</text>
+						<image src="@/static/images/index/tagst.png" mode="widthFix" style="width: 16rpx;height: 16rpx;" class="tagImage"></image>
+					</view>
+					<view class="listBottom">
+						<text class="user_cnt text">{{item.post_num}}聊帖</text>
+						<text class="user_cnt text">  •  {{item.online_num}}人在吧</text>
+					</view>
+				</view>	
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		props: {
+			item: {
+				type: Object,
+				default: () => {}
+			}
+		},
+		// onLoad(){
+		// 	uni.setNavigationBarTitle({
+		// 		title:"聊吧"
+		// 	})
+		// },
+		methods: {
+			handleRouter(id,title) {
+				uni.navigateTo({
+					url: `/pages/talkAbout/talkComponents/talkDetail` + '?id=' + id +'&title=' +title
+				})
+			}
+		},
+		filters: {
+			// 1.日期格式过滤器
+			dateFormat(value, fmt) {
+				let getDate = new Date(value * 1000);
+				let o = {
+					"M+": getDate.getMonth() + 1,
+					"d+": getDate.getDate(),
+					"h+": getDate.getHours(),
+					"m+": getDate.getMinutes(),
+					"s+": getDate.getSeconds(),
+					"q+": Math.floor((getDate.getMonth() + 3) / 3),
+					S: getDate.getMilliseconds(),
+				};
+				if (/(y+)/.test(fmt)) {
+					fmt = fmt.replace(
+						RegExp.$1,
+						(getDate.getFullYear() + "").substr(4 - RegExp.$1.length)
+					);
+				}
+				for (let k in o) {
+					if (new RegExp("(" + k + ")").test(fmt)) {
+						fmt = fmt.replace(
+							RegExp.$1,
+							RegExp.$1.length === 1 ?
+							o[k] :
+							("00" + o[k]).substr(("" + o[k]).length)
+						);
+					}
+				}
+				return fmt;
+			}
+		}
+
+	}
+</script>
+
+<style scoped>
+	@import '@/common/css/nvue-whith.css';
+	
+	.item {
+		flex-direction: row;
+		align-items: center;
+
+	}
+
+	.gameDetail {
+		width: 550rpx;
+		margin-left: 24rpx;
+		align-items: flex-start;
+		/* padding-top: 32rpx;
+		padding-bottom: 32rpx; */
+		border-bottom: 2rpx solid #dddddd;
+	}
+
+	.gamename {
+		color: #1C1C1C;
+		font-weight: 700;
+		font-size: 32rpx;
+		lines: 1;
+	}
+
+	.listBottom {
+		flex-direction: row;
+		align-items: center;
+		/* 	padding: 0 0rpx 20rpx 30rpx; */
+	}
+
+	.type {
+		margin: 0 4rpx;
+	}
+
+	.text {
+		color: #666666;
+		font-size: 24rpx;
+		font-weight: 300;
+	}
+
+	.titleLine {
+		height: 6rpx;
+	}
+
+	.tags {
+		margin: 16rpx 0;
+		flex-direction: row;
+		align-items: center;
+		position: relative;
+	}
+
+	.tagImage {
+		position: absolute;
+		top: 10rpx;
+		left: 16rpx;
+	}
+
+	.tag {
+		color: #666666;
+		font-weight: 300;
+		font-size: 20rpx;
+		lines: 1;
+		padding-top: 2rpx;
+		padding-left: 40rpx;
+		padding-bottom: 2rpx;
+		padding-right: 16rpx;
+		border-radius: 16rpx;
+		/* padding: 2rpx 40rpx 2rpx 16rpx; */
+		background-color: #F4F4F4;
+
+	}
+
+	.rates {
+		margin: 0rpx 32rpx;
+	}
+
+	.rate_item {
+		border: 1px solid #E4E4E4;
+		flex-direction: row;
+		align-items: flex-end;
+		justify-content: center;
+		border-radius:32rpx;
+		padding: 8rpx 16rpx;
+	
+	}
+	.rate_text{
+		color: #FF5927;
+		font-size: 28rpx;
+		font-weight: 600;
+	}
+
+	.rate {
+		font-size: 28rpx;
+		font-weight: 600;
+		color: #FF5927;
+		padding: 8rpx 16rpx;
+		border-radius: 32rpx;
+		border: 2rpx solid #E4E4E4;
+	}
+	.icon{
+	width: 144rpx;
+	height: 144rpx;
+	overflow:hidden
+	}
+
+	.numbers {
+		position: absolute;
+		top: 0;
+		left: -2rpx;
+
+	}
+	
+	.nvue-gameItem{
+		/* border-top: 4rpx solid #d0d0d0; */
+
+	}
+</style>

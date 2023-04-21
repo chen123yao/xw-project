@@ -1,0 +1,163 @@
+@charset "UTF-8";
+
+li {
+  list-style: none; }
+
+ul,
+li {
+  margin: 0;
+  padding: 0; }
+
+.grid_wrap {
+  background-color: #961F12;
+  width: 500upx;
+  height: 500upx;
+  position: relative;
+  border-radius: 12upx;
+  /* box-shadow: 0upx 3upx 3upx 0upx #ED6A36; */
+  }
+  .grid_wrap .lottery_wrap_border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; 
+	}
+    .grid_wrap .lottery_wrap_border ul {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center; }
+      .grid_wrap .lottery_wrap_border ul li {
+        border-radius: 50%;
+        width: 17upx;
+        height: 17upx;
+        background-color: #FF8500; }
+      .grid_wrap .lottery_wrap_border ul li:nth-child(even) {
+        width: 24upx;
+        height: 24upx;
+        background-color: #F0B550; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(odd) {
+      width: 100%;
+      height: 35upx;
+      left: 0;
+      right: 0;
+      flex-direction: row; }
+      .grid_wrap .lottery_wrap_border ul:nth-child(odd) li {
+        margin: 0 10upx; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(even) {
+      width: 35upx;
+      height: 100%;
+      top: 0;
+      bottom: 0;
+      flex-direction: column; }
+      .grid_wrap .lottery_wrap_border ul:nth-child(even) li {
+        margin: 10upx 0; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(3) {
+      bottom: 0; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(4) {
+      right: 0; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(1) li:nth-child(odd),
+    .grid_wrap .lottery_wrap_border ul:nth-child(4) li:nth-child(odd) {
+      animation: blink_large 1s linear infinite; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(1) li:nth-child(even),
+    .grid_wrap .lottery_wrap_border ul:nth-child(4) li:nth-child(even) {
+      animation: blink_small 1s linear infinite; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(3) li:nth-child(even),
+    .grid_wrap .lottery_wrap_border ul:nth-child(2) li:nth-child(even) {
+      width: 17upx;
+      height: 17upx;
+      background-color: #FF8500;
+      animation: blink_large 1s linear infinite; }
+    .grid_wrap .lottery_wrap_border ul:nth-child(3) li:nth-child(odd),
+    .grid_wrap .lottery_wrap_border ul:nth-child(2) li:nth-child(odd) {
+      width: 24upx;
+      height: 24upx;
+      background-color: #F0B550;
+      animation: blink_small 1s linear infinite; }
+  .grid_wrap .lottery_wrap {
+    width: 460upx;
+    height: 460upx;
+    font-size: 14upx;
+    background-color: #961F12;
+    border-radius: 12upx;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1; }
+    .grid_wrap .lottery_wrap .lottery_grid {
+      width: 100%;
+      height: 100%;
+      position: relative; }
+      .grid_wrap .lottery_wrap .lottery_grid li {
+        width: 126.6666666667upx;
+        height: 126.6666666667upx;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        float: left;
+        position: absolute;
+        background-color: #ffffff;
+        border-radius: 12upx;
+        box-shadow: 0upx 2upx 0upx 0upx #f3f3f3;
+        color: #FF8500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 20upx; }
+        .grid_wrap .lottery_wrap .lottery_grid li .grid_img {
+          width: 80upx;
+          height: 80upx; }
+      .grid_wrap .lottery_wrap .lottery_grid .active {
+        background: #FFF6B9;
+        box-shadow: 0 0 5px #FFFF01 inset;
+        color: #FF8500; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(1) {
+        left: 20upx;
+        top: 20upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(2) {
+        left: 166.6666666667upx;
+        top: 20upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(3) {
+        left: 313.3333333333upx;
+        top: 20upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(4) {
+        left: 313.3333333333upx;
+        top: 166.6666666667upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(5) {
+        left: 313.3333333333upx;
+        top: 313.3333333333upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(6) {
+        left: 166.6666666667upx;
+        top: 313.3333333333upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(7) {
+        left: 20upx;
+        top: 313.3333333333upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(8) {
+        left: 20upx;
+        top: 166.6666666667upx; }
+      .grid_wrap .lottery_wrap .lottery_grid li:nth-of-type(9) {
+        left: 166.6666666667upx;
+        top: 166.6666666667upx;
+        cursor: pointer;
+        background: url('@/static/images/cjbutton.png') no-repeat center;
+		background-size: 100%;
+        box-shadow: 0upx 2upx 0upx 0upx #B36A02;
+        color: #ffffff;
+        font-size: 40upx;
+        font-weight: bolder; }
+
+@keyframes blink_large {
+  to {
+    width: 24upx;
+    height: 24upx;
+    background-color: #f5fbc8; } }
+@keyframes blink_small {
+  to {
+    width: 17upx;
+    height: 17upx;
+    background-color: #bce0e9; } }
+
+/*# sourceMappingURL=SJ-LotteryDraw.css.map */
